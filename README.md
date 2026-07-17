@@ -148,3 +148,550 @@ terraform apply
 - Recommended learning resources:
   - **Terraform Up & Running** (book) for in-depth Terraform knowledge.
   - **Terraform Best Practices** (free online e-book) for production-level guidance.
+
+# Terraform Learning Journey
+
+# Day 4
+
+## Topics Covered
+- Terraform Provisioners
+- Local Exec Provisioner
+- Remote Exec Provisioner
+- File Provisioner
+- Connection Block
+- Null Resource
+- Data Sources
+- Providers
+- Terraform Registry
+- Provider Aliases
+- HashiCorp Configuration Language (HCL)
+- Terraform Configuration Files
+- Input Variables
+- Variable Loading Hierarchy
+- Output Values
+- Local Values
+- Named Values
+- Resource Meta Arguments
+- Resource Behaviour
+- Count vs For_Each
+
+---
+
+# Key Takeaways
+
+## 1. Terraform Provisioners
+- Provisioners should be the **last resort**.
+- Terraform's primary responsibility is provisioning infrastructure, not configuring it.
+- Configuration management should be handled by tools like **Ansible**, **Puppet**, or **Chef**.
+
+### Practical Example
+Terraform:
+- Create EC2
+- Create Security Group
+- Create VPC
+
+Ansible:
+- Install Java
+- Install Tomcat
+- Configure server.xml
+- Create systemd service
+- Configure applications
+
+---
+
+## 2. Local Exec
+
+Runs commands on the machine where Terraform is executed.
+
+Example:
+- Create a local text file
+- Write the created EC2 private IP into a file
+- Execute PowerShell or Bash commands locally
+
+---
+
+## 3. Remote Exec
+
+Runs commands on the remote resource after it has been created.
+
+Example:
+- Install packages
+- Restart services
+- Run initialization commands
+
+---
+
+## 4. File Provisioner
+
+Copies files from your local machine to the created resource.
+
+Example:
+- Copy configuration files
+- Copy shell scripts
+- Copy application files
+
+---
+
+## 5. Connection Block
+
+Defines how Terraform connects to a remote machine.
+
+Usually contains:
+- SSH username
+- Private key
+- Host IP
+
+---
+
+## 6. Null Resource
+
+A resource that doesn't create infrastructure.
+
+Used only to execute provisioners or trigger custom tasks.
+
+Example:
+- Execute scripts
+- Trigger local commands
+- Perform automation steps
+
+---
+
+# 7. Data Sources
+
+## Golden Rule
+
+Resource = Create
+
+Data Source = Read Existing Infrastructure
+
+Example:
+Instead of creating a new AMI, VPC, or Security Group, Terraform searches AWS for an existing one and uses it.
+
+Flow:
+
+Terraform
+
+↓
+
+Search AWS
+
+↓
+
+Apply Filters
+
+↓
+
+Return Matching Resource
+
+↓
+
+Use that Resource
+
+Example:
+
+data.aws_ami.web.id
+
+returns the ID of an already existing AMI.
+
+---
+
+# 8. Providers
+
+Provider = Plugin that allows Terraform to communicate with a platform.
+
+Examples:
+- AWS
+- Azure
+- Google Cloud
+- GitHub
+- Kubernetes
+
+Without a provider Terraform has nowhere to create infrastructure.
+
+---
+
+## Provider Alias
+
+Used when multiple configurations of the same provider are required.
+
+Example:
+- AWS Mumbai
+- AWS Singapore
+
+Terraform can select the required provider using an alias.
+
+---
+
+# 9. Providers vs Modules
+
+## Provider
+
+Responsible for communicating with cloud platforms.
+
+Example:
+AWS Provider
+
+↓
+
+Creates EC2
+
+Creates VPC
+
+Creates S3
+
+---
+
+## Module
+
+Reusable block of Terraform code.
+
+Exactly like a function in programming.
+
+Instead of writing the same configuration repeatedly, write it once and reuse it.
+
+---
+
+# 10. HashiCorp Configuration Language (HCL)
+
+Terraform configuration files are written in HCL.
+
+Extensions:
+- .tf
+- .tf.json
+
+Main building blocks:
+
+- Blocks
+- Arguments
+- Expressions
+
+---
+
+# 11. Input Variables
+
+Purpose:
+Receive values from outside Terraform.
+
+Common arguments:
+- type
+- default
+- description
+- validation
+- sensitive
+
+---
+
+# 12. Variable Loading Priority
+
+Lowest Priority
+
+Default
+
+↓
+
+Environment Variables (TF_VAR_)
+
+↓
+
+terraform.tfvars
+
+↓
+
+*.auto.tfvars
+
+↓
+
+-var-file
+
+↓
+
+-var
+
+Highest Priority
+
+Rule:
+The higher priority source overrides all lower priority values.
+
+---
+
+# 13. Output Values
+
+Outputs display information after infrastructure creation.
+
+Example:
+- Public IP
+- DNS Name
+- Instance ID
+
+Useful commands:
+
+terraform output
+
+terraform output <name>
+
+terraform output -json
+
+terraform output -raw
+
+Important:
+
+sensitive = true
+
+only hides values from the terminal.
+
+Sensitive values are still stored in plain text inside the Terraform State File.
+
+---
+
+# 14. Local Values
+
+## Variable
+
+Value supplied by the user.
+
+Example:
+Environment
+Instance Type
+AWS Region
+
+---
+
+## Local
+
+Value calculated or reused inside Terraform.
+
+Example:
+
+Environment = Production
+
+↓
+
+Terraform calculates
+
+↓
+
+Production-Tomcat-Server
+
+Rule:
+
+Ask yourself:
+
+Should the user decide this value?
+
+YES → Variable
+
+NO → Local
+
+Variables = External Inputs
+
+Locals = Internal Calculations
+
+---
+
+# 15. Named Values
+
+Named Values are simply references used to access existing values.
+
+Examples:
+
+Variables
+
+var.instance_type
+
+Locals
+
+local.server_name
+
+Data Sources
+
+data.aws_ami.web.id
+
+Resources
+
+aws_instance.web.public_ip
+
+Modules
+
+module.vpc
+
+Self
+
+self.private_ip
+
+Remember:
+
+Named Values are only references.
+
+They do not create anything.
+
+---
+
+# 16. Resource Meta Arguments
+
+Meta Arguments modify Terraform's behaviour instead of modifying the resource itself.
+
+depends_on
+
+Controls creation order.
+
+count
+
+Creates multiple identical resources.
+
+for_each
+
+Creates multiple resources using unique values.
+
+provider
+
+Selects a different provider configuration.
+
+lifecycle
+
+Customizes resource lifecycle.
+
+provisioner
+
+Runs additional actions after resource creation.
+
+connection
+
+Defines how Terraform connects to remote resources.
+
+---
+
+# 17. Count vs For_Each
+
+## Count
+
+Best when resources are almost identical.
+
+Example:
+
+count = 3
+
+Creates:
+
+EC2-1
+
+EC2-2
+
+EC2-3
+
+---
+
+## For_Each
+
+Best when every resource has its own identity.
+
+Example:
+
+Tomcat
+
+Jenkins
+
+Grafana
+
+Each resource has different values.
+
+---
+
+## Understanding each.key and each.value
+
+### Using a Map
+
+Example:
+
+Tomcat → Mumbai
+
+Jenkins → Singapore
+
+Iteration 1
+
+each.key = Tomcat
+
+each.value = Mumbai
+
+Iteration 2
+
+each.key = Jenkins
+
+each.value = Singapore
+
+Meaning:
+
+each.key = Resource Name
+
+each.value = Resource Property
+
+---
+
+### Using a Set (toset)
+
+Example:
+
+Todd
+
+James
+
+Alice
+
+Dottie
+
+Terraform internally loops through every value.
+
+Iteration:
+
+each.key = Todd
+
+↓
+
+Create IAM User Todd
+
+Next:
+
+each.key = James
+
+↓
+
+Create IAM User James
+
+When using a Set:
+
+each.key represents the current value.
+
+---
+
+Rule:
+
+Count → Multiple identical resources
+
+For_Each → Multiple unique resources
+
+---
+
+# 18. Resource Behaviour
+
+Terraform compares:
+
+- Configuration
+- State File
+- Real Infrastructure
+
+Possible actions:
+
++ Create
+
+Resource doesn't exist.
+
+- Destroy
+
+Removed from configuration.
+
+~ Update In-Place
+
+Modify existing resource.
+
+-/+ Replace
+
+Destroy old resource and create a new one because the change cannot be performed in place.
